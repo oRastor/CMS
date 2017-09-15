@@ -250,12 +250,56 @@ class MediaController extends Controller
 
     /**
      * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws Exception
+     */
+    private function saveData($request)
+    {
+        if (!preg_match('/data:([^;]*);base64,(.*)/', $request->data, $matches)) {
+            throw new Exception("Invalid data passed");
+        }
+
+        $extension = 'png';
+        switch ($matches[1]) {
+            case 'image/png':
+                $extension = 'png';
+                break;
+            case 'image/jpg':
+                $extension = 'jpg';
+                break;
+            case 'image/gif':
+                $extension = 'gif';
+                break;
+        }
+
+        Storage::disk('public')->makeDirectory($request->upload_path);
+
+        $name = sha1(time() . substr($request->data, 0, 100));
+
+        $fullPath = Storage::disk($this->filesystem)->getDriver()->getAdapter()->getPathPrefix() .
+            $request->upload_path . DIRECTORY_SEPARATOR . $name . '.' . $extension;
+
+        Image::make(base64_decode($matches[2]))->save($fullPath, 100);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'File saved!',
+            'path' => '/storage/' . $request->upload_path . DIRECTORY_SEPARATOR . $name . '.' . $extension
+        ]);
+    }
+
+    /**
+     * @param Request $request
      *
      * @return \Illuminate\Http\JsonResponse
      */
     public function upload(Request $request)
     {
         try {
+            if (isset($request->data)) {
+                return $this->saveData($request);
+            }
+
             $path = $request->file->store($request->upload_path, $this->filesystem);
             $success = true;
             $message = 'Successfully uploaded new file!';
