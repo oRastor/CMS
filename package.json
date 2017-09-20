@@ -9,7 +9,11 @@
     "prod": "npm run production",
     "production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js"
   },
-  "dependencies": {},
+  "dependencies": {
+    "blueimp-file-upload": "^9.19.1",
+    "medium-editor": "^5.23.2",
+    "medium-editor-insert-plugin-es6": "^3.0.1"
+  },
   "devDependencies": {
     "cross-env": "^5.0.1",
     "laravel-mix": "^1.0",
